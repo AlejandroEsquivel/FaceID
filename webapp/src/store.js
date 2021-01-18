@@ -1,0 +1,109 @@
+import React, { useState, useContext, useEffect } from 'react';
+import { 
+    getIdToken, 
+    setIdToken, 
+    setRefreshToken,
+    isIdTokenValid, 
+    refreshIdToken, 
+    removeIdToken,
+    removeRefreshToken,
+    getDecodedToken,
+    getRefreshToken
+} from './auth';
+
+
+const initialState = {
+    isLoggedIn: isIdTokenValid(),
+    idToken: getIdToken(),
+    refreshToken: getRefreshToken(),
+}
+  
+const StoreContext = React.createContext();
+
+const StoreProvider = React.memo(({children})=> {
+
+    const [state, setState] = useState(initialState);
+    
+    const { isLoggedIn } = state;
+
+    const login = ({ 
+        idToken,
+        refreshToken,
+    }) => {
+        if(idToken){
+            setIdToken(idToken);
+            setRefreshToken(refreshToken);
+            setUser(user);
+            setState({
+                ...state,
+                idToken,
+                refreshToken,
+                isLoggedIn: true
+            });
+        }
+    };
+
+    const logout = ()=>{
+        removeIdToken();
+        removeRefreshToken();
+        removeUser();
+        setState({
+            ...state,
+            idToken: '',
+            refreshToken: '',
+            isLoggedIn: false
+        })
+    };
+
+
+    useEffect(()=>{
+        const SECOND = 1000;
+        const MINUTE = 60*SECOND;
+        const authInterval = setInterval(async()=>{
+            const isTokenValid = isIdTokenValid();
+            if(isLoggedIn && !isTokenValid){
+                logout();
+            }
+            else if(isLoggedIn && isTokenValid){
+                const { idToken, refreshToken } = await refreshIdToken();
+                if(idToken && refreshToken){
+                    setIdToken(idToken);
+                    setRefreshToken(refreshToken);
+                    setState({
+                        ...state,
+                        idToken,
+                        refreshToken
+                    });
+                }
+            }
+        },5*MINUTE);
+
+        return ()=> authInterval && clearInterval(authInterval);
+    },[]);
+
+    useEffect(()=>{
+        console.log('Global state update', state)
+    },[state])
+
+    return (
+        <StoreContext.Provider value={{ 
+                state, 
+                actions: {
+                    setState,
+                    login,
+                    logout,
+                } 
+            }}>
+            {children}
+        </StoreContext.Provider>
+    )
+});
+
+const useStore = () => useContext(StoreContext);
+
+export { 
+    StoreContext,
+    StoreProvider,
+    useStore,
+    initialState
+ };
