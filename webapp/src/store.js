@@ -33,7 +33,6 @@ const StoreProvider = React.memo(({children})=> {
         if(idToken){
             setIdToken(idToken);
             setRefreshToken(refreshToken);
-            setUser(user);
             setState({
                 ...state,
                 idToken,
@@ -46,7 +45,6 @@ const StoreProvider = React.memo(({children})=> {
     const logout = ()=>{
         removeIdToken();
         removeRefreshToken();
-        removeUser();
         setState({
             ...state,
             idToken: '',
