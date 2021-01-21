@@ -136,20 +136,6 @@ def sign_up():
     else:
       return { 'message': 'User already exists' }, 500
 
-@app.route('/face/signin', methods=['POST'])
-def identify_face():
-    content = request.json
-    binary = base64.b64decode(content['snapshot'])
-    #blob = bucket.blob(f'tesst2.jpg')
-    #blob.upload_from_string(io.BytesIO(binary).read(), content_type='image/jpeg')
-    #blob.make_public()
-    image = np.asarray(bytearray(binary), dtype="uint8")
-    image = cv.imdecode(image, cv.IMREAD_COLOR)
-    print('--score--')
-    face = return_face(image)
-    eigenface = get_eigenface(face)
-    #cv.imwrite('./test.jpg', image) 
-    return { 'face': face }
 
 @app.route('/signin', methods=['POST'])
 def signIn():
