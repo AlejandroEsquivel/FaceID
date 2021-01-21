@@ -1,6 +1,7 @@
 body {
   margin: 0;
   font-family: 'Roboto';
+  background-color: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 } 
@@ -68,4 +69,25 @@ div.thumbnail .icon {
   z-index: 10000;
   height: 35px;
   width: 35px;
+}
+
+.login-form, .home-view {
+  width: 500px;
+  min-height: 50px;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  position: relative;
+  background-color: white
+}
+
+.view-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+}
+
+.text-align-center {
+  text-align: center;
 }

@@ -1,8 +1,10 @@
 import './index.css';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
-import api from './../../api'
 import React, { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
+
+import api from './../../api'
 import Alert from './../../components/Alert'
 import { useStore } from '../../store';
 import FacialIdAnimation from '../../components/FacialIdAnimation';
@@ -23,6 +25,7 @@ const FACIAL_ID_RESULT_TYPE = {
 function Login() {
 
     const { state: globalState, actions } = useStore();
+    const history = useHistory();
 
     const [webcam, setWebcam] = useState(null);
     const [headlessCanvas, setCanvas] = useState(null);
@@ -212,7 +215,7 @@ function Login() {
             success: null,
             loginButtonCopy: 'Please face towards camera...'
         }
-        setLoginState(loginState)
+        setLoginState(loginState);
 
         for(let i=3;i>0; i--){
             _loginState = {
@@ -220,7 +223,7 @@ function Login() {
                 isFaceIdRunning: true,
                 loginButtonCopy: `Please face towards camera... ${i}`
             }
-            setLoginState(_loginState)
+            setLoginState(_loginState);
             await wait(1000);
         }
 
@@ -230,7 +233,7 @@ function Login() {
                 isFaceIdRunning: true,
                 loginButtonCopy: 'Processing...'
             }
-            setLoginState(_loginState)
+            setLoginState(_loginState);
             const { base64 } = takeSnapshot();
             const { score, uid, face, token } = await api.signIn(base64);
             await actions.login(token);
@@ -241,7 +244,7 @@ function Login() {
                 success: true,
 
             }
-            setLoginState(_loginState)
+            setLoginState(_loginState);
         } catch(err){
             if(err.response && err.response.data && err.response.data.code === 401){
                 const face = err.response.data.face;
@@ -251,7 +254,7 @@ function Login() {
                     thumbnailDataURL: face,
                     success: false
                 }
-                setLoginState(_loginState)
+                setLoginState(_loginState);
             }
             else {
                 _loginState = {
@@ -261,7 +264,7 @@ function Login() {
                     thumbnailDataURL: '',
                     success: null
                 }
-                return setLoginState(_loginState)
+                return setLoginState(_loginState);
             }
         }
 
@@ -271,13 +274,16 @@ function Login() {
                 loginButtonCopy: 'Login',
                 thumbnailDataURL: '',
                 isFaceIdRunning: false
-            })
-        },1000*4)
+            });
+            if(_loginState.success){
+                history.push(`/home`);
+            }
+        },1000*4);
     }
 
 
     return (
-        <div className="container">
+        <div className="view-container">
             <div className="login-form shadow1">
                 {
                     viewState === VIEW_STATES.HOME && (
