@@ -65,10 +65,16 @@ class APIClient {
         return (await this.request(endpoint, params, APIClient.Methods.POST)).data;
     }
 
-    identifyFace = async(snapshot)=>{
-        return this.post('/face', {
-            snapshot
-        })
+    signIn = async(snapshot)=>{
+        return this.post('/signin', { snapshot })
+    }
+
+    validateFace = async(snapshot)=>{
+        return this.post('/face/validate', { snapshot })
+    }
+
+    signUp = async(email, snapshot) => {
+        return this.post('/signup', { email, snapshot })
     }
     
 }

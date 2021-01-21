@@ -8,7 +8,8 @@ import {
     removeIdToken,
     removeRefreshToken,
     getDecodedToken,
-    getRefreshToken
+    getRefreshToken,
+    firebaseAuth
 } from './auth';
 
 
@@ -26,19 +27,19 @@ const StoreProvider = React.memo(({children})=> {
     
     const { isLoggedIn } = state;
 
-    const login = ({ 
-        idToken,
-        refreshToken,
-    }) => {
+    const login = async (idToken) => {
         if(idToken){
-            setIdToken(idToken);
-            setRefreshToken(refreshToken);
-            setState({
-                ...state,
-                idToken,
-                refreshToken,
-                isLoggedIn: true
-            });
+            try {
+                const { user } = await firebaseAuth.signInWithCustomToken(idToken);
+                setIdToken(idToken);
+                setState({
+                    ...state,
+                    idToken,
+                    isLoggedIn: true
+                });
+            } catch(err){
+                console.error(err);
+            }
         }
     };
 
