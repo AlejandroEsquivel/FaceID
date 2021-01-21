@@ -19,3 +19,53 @@ body {
 .mt-1 {
   margin-top: 1rem !important;
 }
+
+div.thumbnail {
+  width: 75px;
+  height: 75px;
+  overflow: hidden;
+  border-radius: 75px;
+  display: inline-block;
+  position: relative;
+}
+
+div.thumbnail img {
+  width: 75px;
+  height: auto;
+}
+
+div.thumbnail .overlay {
+  transition-property: opacity;
+  transition-duration: 3s;
+  position: absolute;
+  width: 75px;
+  height: 75px;
+  top: 0;
+  left: 0
+}
+
+div.thumbnail .overlay.failure {
+  background-color: #d44848;
+  opacity: 0;
+}
+
+div.thumbnail .overlay.success {
+  background-color: green;
+  opacity: 0;
+}
+
+div.thumbnail .overlay.active {
+  opacity: 1;
+}
+
+div.thumbnail .icon {
+  margin: auto;
+  position: absolute;
+  top: 0; 
+  left: 0; 
+  bottom: 0; 
+  right: 0;
+  z-index: 10000;
+  height: 35px;
+  width: 35px;
+}
