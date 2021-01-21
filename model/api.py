@@ -155,6 +155,8 @@ def signIn():
       image = np.asarray(bytearray(binary), dtype="uint8")
       image = cv.imdecode(image, cv.IMREAD_COLOR)
       face = return_face(image)
+      if face is None:
+        raise Exception("No face detected")
       thumbnail = return_square_face(image)
       eigenface_original = get_eigenface(face)
 
