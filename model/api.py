@@ -63,6 +63,18 @@ print(f'Imported {n_samples} faces.')
 
 face_cascade = cv.CascadeClassifier('./haarcascade_frontalface_alt.xml');
 
+
+def return_square_face(image):
+  # Convert color image to grayscale for Viola-Jones
+  grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+  faces_bounding_boxes = face_cascade.detectMultiScale(grayscale_image)
+  # iterate through bounding boxes
+  for bb in faces_bounding_boxes:
+      x, y, ww, hh = [ v for v in bb ]
+      face = image[y:y+hh, x:x+ww]
+      return face
+
+# Return rectangular image containing face in dimensions of lfw images
 def return_face(image):
   # Convert color image to grayscale for Viola-Jones
   grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
@@ -77,16 +89,6 @@ def return_face(image):
       c = [x + (ww/2), y + (hh/2)]
       x_0 = c[0] - nw/2;
       x_1 = c[0] + nw/2
-      y_0 = c[1] - nh/2
-      y_1 = c[1] + nh/2
-      cv.rectangle(
-        image,
-        (x, y),
-        (x + ww, y + hh),
-        (0, 255, 0),
-        2
-      )
-      #cv2_imshow(image)
       rectFace = grayscale_image[y:y+hh,math.trunc(x_0):math.trunc(x_1)]
       face = cv.resize(rectFace, dsize=(face_dimensions[1], face_dimensions[0]), interpolation=cv.INTER_CUBIC)
       return face
@@ -109,14 +111,17 @@ print(f'Generated {n_components} dimensional loading vectors.')
 def validate_face():
     body = request.json
     snapshot = body['snapshot']
-    binary = base64.b64decode(snapshot)
-    image = np.asarray(bytearray(binary), dtype="uint8")
-    image = cv.imdecode(image, cv.IMREAD_COLOR)
-    face = return_face(image)
-    if face is None:
-      return { 'message': 'Face was not detected.' }, 500
-    else:
-      return { 'message': 'Face was successfully detected.' }
+    try:
+      binary = base64.b64decode(snapshot)
+      image = np.asarray(bytearray(binary), dtype="uint8")
+      image = cv.imdecode(image, cv.IMREAD_COLOR)
+      face = return_face(image)
+      if face is None:
+        return { 'message': 'Face was not detected.', 'code': 400 }, 400
+      else:
+        return { 'message': 'Face was successfully detected.' }
+    except Exception as e:
+        return { 'message': str(e), 'code': 500 }, 500
 
 @app.route('/signup', methods=['POST'])
 def sign_up():
@@ -126,49 +131,62 @@ def sign_up():
       snapshot = body['snapshot']
       existing_user = auth.get_user_by_email(email)
     except:
-      user = auth.create_user(email=email)
-      uid = user.uid
-      binary = base64.b64decode(snapshot)
-      blob = bucket.blob(f'{uid}.jpg')
-      blob.upload_from_string(io.BytesIO(binary).read(), content_type='image/jpeg')
-      blob.make_public()
-      return { 'user': uid, 'token': generate_token(uid) }
+      try:
+        user = auth.create_user(email=email)
+        uid = user.uid
+        binary = base64.b64decode(snapshot)
+        blob = bucket.blob(f'{uid}.jpg')
+        blob.upload_from_string(io.BytesIO(binary).read(), content_type='image/jpeg')
+        blob.make_public()
+        return { 'user': uid, 'token': generate_token(uid) }
+      except Exception as e:
+        return { 'message': str(e), 'code': 500 }, 500
     else:
-      return { 'message': 'User already exists' }, 500
+      return { 'message': 'User already exists', 'code': 406 }, 406
 
 
 @app.route('/signin', methods=['POST'])
 def signIn():
     body = request.json
     snapshot = body['snapshot']
-    binary = base64.b64decode(snapshot)
-    image = np.asarray(bytearray(binary), dtype="uint8")
-    image = cv.imdecode(image, cv.IMREAD_COLOR)
-    eigenface_original = get_eigenface(return_face(image))
 
-    scores = []
-    uids = []
-
-    for user in auth.list_users().iterate_all():
-      blob = bucket.blob(f"{user.uid}.jpg")
-      binary = blob.download_as_string()
+    try:
+      binary = base64.b64decode(snapshot)
       image = np.asarray(bytearray(binary), dtype="uint8")
-      image = cv.imdecode(image, cv.IMREAD_COLOR) 
-      eigenface_iteration = get_eigenface(return_face(image))
-      score = cosine_similarity(eigenface_iteration,eigenface_original)
+      image = cv.imdecode(image, cv.IMREAD_COLOR)
+      face = return_face(image)
+      thumbnail = return_square_face(image)
+      eigenface_original = get_eigenface(face)
 
-      uids.append(user.uid);
-      scores.append(score)
+      scores = []
+      uids = []
 
-      print(f'User {user.uid} | score: ${score}')
+      base64face = f"data:image/jpg;base64,{base64.b64encode(cv.imencode('.jpg', thumbnail)[1]).decode()}"
 
-    max_score = max(scores)
-    max_score_index = scores.index(max_score)
-    max_score_uid = uids[max_score_index]
+      max_score = 0
 
-    if(max_score >= 0.3 ):
-      return { 'uid': max_score_uid, 'token': generate_token(max_score_uid), 'score': max_score }
+      for user in auth.list_users().iterate_all():
+        blob = bucket.blob(f"{user.uid}.jpg")
+        binary = blob.download_as_string()
+        image = np.asarray(bytearray(binary), dtype="uint8")
+        image = cv.imdecode(image, cv.IMREAD_COLOR) 
+        eigenface_iteration = get_eigenface(return_face(image))
+        score = cosine_similarity(eigenface_iteration,eigenface_original)
+
+        uids.append(user.uid);
+        scores.append(score)
+
+        print(f'User {user.uid} | score: ${score}')
+
+      max_score = max(scores)
+      max_score_index = scores.index(max_score)
+      max_score_uid = uids[max_score_index]
+    except Exception as e:
+        return { 'message': str(e), 'code': 500 }, 500
+
+    if(max_score >= 0.3):
+      return { 'uid': max_score_uid, 'token': generate_token(max_score_uid), 'score': max_score, 'face': base64face }
     else:
-      return { 'message': 'Did not find match.', 'score': max_score }, 401
+      return { 'message': 'Did not find match.', 'score': max_score, 'face': base64face, 'code': 401 }, 401
 
   
