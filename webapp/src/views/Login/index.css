@@ -3,6 +3,7 @@
     min-height: 100px;
     padding: 1.5rem;
     border-radius: 1rem;
+    position: relative;
 }
 
 .container {
@@ -11,4 +12,17 @@
     align-items: center;
     height: 100vh;
     width: 100vw;
+}
+
+#webcam {
+    position: relative;
+}
+
+.success {
+    background-color: #5ba252 !important;
+}
+
+.back-btn {
+    position: absolute;
+    bottom: 2rem;
 }
