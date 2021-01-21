@@ -25,3 +25,11 @@ yarn-error.log*
 .vscode
 
 .eslintcache
+
+env
+.env
+
+api.old.py
+
+__pycache__
+fb-service-acct-key.json
