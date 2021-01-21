@@ -35,6 +35,7 @@ const StoreProvider = React.memo(({children})=> {
                 setState({
                     ...state,
                     idToken,
+                    user,
                     isLoggedIn: true
                 });
             } catch(err){
@@ -43,13 +44,15 @@ const StoreProvider = React.memo(({children})=> {
         }
     };
 
-    const logout = ()=>{
+    const logout = async ()=>{
+        await firebaseAuth.signOut();
         removeIdToken();
         removeRefreshToken();
         setState({
             ...state,
             idToken: '',
             refreshToken: '',
+            user: null,
             isLoggedIn: false
         })
     };
@@ -64,7 +67,7 @@ const StoreProvider = React.memo(({children})=> {
                 logout();
             }
             else if(isLoggedIn && isTokenValid){
-                const { idToken, refreshToken } = await refreshIdToken();
+                /*const { idToken, refreshToken } = await refreshIdToken();
                 if(idToken && refreshToken){
                     setIdToken(idToken);
                     setRefreshToken(refreshToken);
@@ -73,7 +76,7 @@ const StoreProvider = React.memo(({children})=> {
                         idToken,
                         refreshToken
                     });
-                }
+                }*/
             }
         },5*MINUTE);
 

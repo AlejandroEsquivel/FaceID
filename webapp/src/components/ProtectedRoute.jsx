@@ -13,6 +13,6 @@ export default (props) => {
     return (
         isLoggedIn
         ? <Component {...rest} />
-        : <Redirect to="/login?logout" noThrow/>
+        : <Redirect to="/login?redirect" noThrow/>
     )
 }

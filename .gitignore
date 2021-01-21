@@ -34,3 +34,5 @@ api.old.py
 __pycache__
 fb-service-acct-key.json
 *.model
+*.jpg
+*.jpeg
