@@ -91,3 +91,12 @@ div.thumbnail .icon {
 .text-align-center {
   text-align: center;
 }
+
+.logo {
+  position: absolute;
+  top: -40px;
+  left:0;
+  right: 0;
+  height: 40px;
+  text-align: center;
+}

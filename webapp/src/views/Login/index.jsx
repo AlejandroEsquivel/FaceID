@@ -36,7 +36,8 @@ function Login() {
         email: '',
         snapshot: '',
         faceValidated: null,
-        warningCopy: ''
+        warningCopy: '',
+        isSigningUp: false
     })
 
     const [loginState, setLoginState] = useState({
@@ -186,12 +187,18 @@ function Login() {
             })
         }
         else {
+            setSignUpState({
+                ...signUpState,
+                isSigningUp: true
+            })
             try {
-                const res = await api.signUp(email,snapshot);
-                console.log(res);
+                const { token } = await api.signUp(email,snapshot);
+                await actions.login(token);
+                history.push('/home')
             } catch(err){
                 setSignUpState({
                     ...signUpState,
+                    isSigningUp: false,
                     warningCopy: 'User already exists.'
                 })
             }
@@ -235,7 +242,7 @@ function Login() {
             }
             setLoginState(_loginState);
             const { base64 } = takeSnapshot();
-            const { score, uid, face, token } = await api.signIn(base64);
+            const { face, token } = await api.signIn(base64);
             await actions.login(token);
             _loginState = {
                 ..._loginState,
@@ -285,6 +292,9 @@ function Login() {
     return (
         <div className="view-container">
             <div className="login-form shadow1">
+                <div className="logo">
+                    FaceID &#128123;
+                </div>
                 {
                     viewState === VIEW_STATES.HOME && (
                         <React.Fragment>
@@ -337,12 +347,12 @@ function Login() {
                             }
                             {
                               signUpState.faceValidated === true && (
-                                <Button className="mt success" variant="contained" color="primary" onClick={signUp} disabled={!webcamReady} fullWidth>
-                                    Complete
+                                <Button className="mt success" variant="contained" color="primary" onClick={signUp} disabled={!webcamReady || signUpState.isSigningUp} fullWidth>
+                                    Create User
                                 </Button>
                                 ) || null
                             }
-                            <div style={{ textAlign: 'center'}} >
+                            <div style={{ textAlign: 'left', color: 'grey'}} className="mt">
                                 <a href="#" onClick={switchViewState(VIEW_STATES.HOME)}>Back</a>
                             </div>
                         </React.Fragment>
