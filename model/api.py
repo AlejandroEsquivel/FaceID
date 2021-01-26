@@ -25,12 +25,14 @@ import firebase_admin as firebase
 from firebase_admin import auth
 from firebase_admin import storage
 
+STORAGE_BUCKET_NAME = os.getenv('STORAGE_BUCKET_NAME')
+SCORE_THRESHOLD = float(os.getenv('SCORE_THRESHOLD'))
 
 app = Flask(__name__)
 CORS(app)
 
 fb = firebase.initialize_app()
-bucket = storage.bucket('ae-faceid.appspot.com')
+bucket = storage.bucket(STORAGE_BUCKET_NAME)
 
 
 def cosine_similarity(v1,v2):
@@ -45,6 +47,17 @@ def generate_password():
 def generate_token(uid):
   custom_token = auth.create_custom_token(uid).decode("utf-8") 
   return custom_token
+
+def euclidean_distance(v1,v2):
+  delta = v1-v2
+  return math.sqrt(np.dot(delta,delta))
+
+def score(v1,v2):
+  return 1/euclidean_distance(v1,v2)
+  
+
+print(f'Using storage bucket {STORAGE_BUCKET_NAME}')
+print(f'Face recognition score threshold {SCORE_THRESHOLD}')
 
 
 ## Get faces in the wild dataset
@@ -91,11 +104,13 @@ def return_face(image):
       x_1 = c[0] + nw/2
       rectFace = grayscale_image[y:y+hh,math.trunc(x_0):math.trunc(x_1)]
       face = cv.resize(rectFace, dsize=(face_dimensions[1], face_dimensions[0]), interpolation=cv.INTER_CUBIC)
-      return face
+      # low pass filtered face - i.e blurred
+      lp_face = cv.GaussianBlur(face,(3,3),0)
+      return lp_face
   
 ###
 
-n_components = 300
+n_components = 128
 
 print('Generating PCA loading vectors...')
 pca = PCA(n_components=n_components, svd_solver='randomized',
@@ -178,15 +193,16 @@ def signIn():
         uids.append(user.uid);
         scores.append(score)
 
-        print(f'User {user.uid} | score: ${score}')
+        print(f'User {user.uid} | score: {score} | distance {1/score}')
 
       max_score = max(scores)
       max_score_index = scores.index(max_score)
       max_score_uid = uids[max_score_index]
+      print(f'Max Score = {max_score} | Max Score User {max_score_uid}')
     except Exception as e:
         return { 'message': str(e), 'code': 500 }, 500
 
-    if(max_score >= 0.3):
+    if(max_score >= SCORE_THRESHOLD):
       return { 'uid': max_score_uid, 'token': generate_token(max_score_uid), 'score': max_score, 'face': base64face }
     else:
       return { 'message': 'Did not find match.', 'score': max_score, 'face': base64face, 'code': 401 }, 401
