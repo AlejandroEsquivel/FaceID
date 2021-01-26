@@ -1,4 +1,4 @@
-# FaceID - API
+# FaceID - API (Python)
 
 ## Set up
 

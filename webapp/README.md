@@ -1,4 +1,4 @@
-# FacialID
+# FaceID - Web Application (React)
 
 ## Available Scripts
 
