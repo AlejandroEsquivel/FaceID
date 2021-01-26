@@ -1,8 +1,12 @@
 # FaceID 
 
-Trivial implementation of a facial recognition authentication system using dimensionality reduction technique PCA / Eigenfaces approach.
+Trivial implementation of a facial recognition authentication system using dimensionality reduction technique PCA ("Eigenfaces") and computing face similarities using Euclidean Distance. 
+
+Note: This approach is very sensitive to lighting conditions, and should not be used for production authentication systems due to many vunerabilities associated with authenticating using a still 2D image and limitations of this approach.
 
 ## Frontend (React)
+
+Navigate to `webapp` folder and follow instructions below.
 
 ### Set up
 
@@ -31,6 +35,8 @@ yarn build
 ```
 
 ## Backend (Python)
+
+Navigate to `model` folder and follow instructions below.
 
 ### Set up
 
