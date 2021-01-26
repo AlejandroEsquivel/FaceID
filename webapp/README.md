@@ -9,7 +9,7 @@ yarn
 
 ### Configuration
 
-Create `.env` file and modify values are required
+Create `.env` file and modify values as required
 ```sh
 cp .env.example .env
 ```

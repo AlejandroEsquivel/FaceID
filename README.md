@@ -17,7 +17,7 @@ yarn
 
 #### Configuration
 
-Create `.env` file and modify values are required
+Create `.env` file and modify values as required
 ```sh
 cp .env.example .env
 ```
@@ -50,7 +50,7 @@ pip install -r requirements.txt
 
 #### Configuration
 
-Create `.env` file and modify values are required
+Create `.env` file and modify values as required
 ```sh
 cp .env.example .env
 ```
