@@ -293,7 +293,7 @@ function Login() {
         <div className="view-container">
             <div className="login-form shadow1">
                 <div className="logo">
-                    FaceID &#128123;
+                    FacialID &#128123;
                 </div>
                 {
                     viewState === VIEW_STATES.HOME && (
